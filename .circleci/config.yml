@@ -9,12 +9,14 @@ jobs:
         name: configure environment
         command: |
           set -euo pipefail
+          cat \<<EOF \>> $BASH_ENV
           export API=https://api.github.com
           export SHA=$CIRCLE_SHA1
           export USER=$CIRCLE_PROJECT_USERNAME
           export REPO=$CIRCLE_PROJECT_REPONAME
           export AUTH=samsalisbury:$GITHUB_ACCESS_TOKEN
           export URL=$API/repos/$USER/$REPO/statuses/$SHA
+          EOF
     - run:
         name: set github status pending
         command: |
