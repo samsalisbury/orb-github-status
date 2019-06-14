@@ -1,3 +1,3 @@
-# circleci-exp
+# circleci-experiments
 
-Random circleci experiments.
+Random circleci noodling.
