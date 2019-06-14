@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   print_env:
     docker:
-    - image: buildpack-deps:19.04-curl
+    - image: busybox
     steps:
     - run:
         name: configure environment
@@ -19,8 +19,7 @@ jobs:
         name: set github status pending
         command: |
           set -euo pipefail
-          curl -fIu $AUTH -XPOST -d@- $URL <(
-            cat \<<EOF
+          BODY=$(cat \<<EOF
             {
               "state": "pending",
               "target_url": "$CIRCLE_BUILD_URL",
@@ -28,7 +27,8 @@ jobs:
               "context": "ci/print_env"
             } 
             EOF
-          ) 
+          )
+          curl -fIu $AUTH -XPOST -d@- $URL < $BODY
     - run: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
     - run:
         name: set success
@@ -43,8 +43,7 @@ jobs:
         when: always
         command: |
           set -euo pipefail
-          curl -fIu $AUTH -XPOST -d@- $URL <(
-            cat \<<EOF
+          BODY=$(cat \<<EOF
             {
               "state": "$STATE",
               "target_url": "$CIRCLE_BUILD_URL",
@@ -53,6 +52,7 @@ jobs:
             } 
             EOF
           )       
+          curl -fIu $AUTH -XPOST -d@- $URL < $BODY
 
 workflows:
   all:
