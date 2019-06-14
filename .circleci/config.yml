@@ -21,7 +21,7 @@ jobs:
         name: set github status pending
         command: |
           set -euo pipefail
-          read -r -d '' VAR \<<EOF
+          read -r -d '' BODY \<<EOF
             {
               "state": "pending",
               "target_url": "$CIRCLE_BUILD_URL",
@@ -44,7 +44,7 @@ jobs:
         when: always
         command: |
           set -euo pipefail
-          read -r -d '' VAR \<<EOF
+          read -r -d '' BODY \<<EOF
             {
               "state": "$STATE",
               "target_url": "$CIRCLE_BUILD_URL",
