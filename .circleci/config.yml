@@ -5,40 +5,54 @@ jobs:
     docker:
     - image: busybox
     steps:
-    - run: |
-        set -euo pipefail
-        export API=https://api.github.com
-        export SHA=$CIRCLE_SHA1
-        export USER=$CIRCLE_PROJECT_USERNAME
-        export REPO=$CIRCLE_PROJECT_REPONAME
-        export AUTH=samsalisbury:$GITHUB_ACCESS_TOKEN
-        export URL=$API/repos/$USER/$REPO/statuses/$SHA
-    - run: |
-        set -euo pipefail
-        curl -fIu $AUTH -XPOST -d@- $URL <(
-          cat \<<EOF
-          {
-            "state": "pending",
-            "target_url": "$CIRCLE_BUILD_URL",
-            "description": "started",
-            "context": "ci/print_env"
-          } 
-          EOF
-        ) 
-    - run: env | grep CIRCLE
-    - run: echo "Sleeping for 30s"; sleep 30
-    - run: |
-        set -euo pipefail
-        curl -fIu $AUTH -XPOST -d@- $URL <(
-          cat \<<EOF
-          {
-            "state": "success",
-            "target_url": "$CIRCLE_BUILD_URL",
-            "description": "complete",
-            "context": "ci/print_env"
-          } 
-          EOF
-        )       
+    - run:
+        name: configure environment
+        command: |
+          set -euo pipefail
+          export API=https://api.github.com
+          export SHA=$CIRCLE_SHA1
+          export USER=$CIRCLE_PROJECT_USERNAME
+          export REPO=$CIRCLE_PROJECT_REPONAME
+          export AUTH=samsalisbury:$GITHUB_ACCESS_TOKEN
+          export URL=$API/repos/$USER/$REPO/statuses/$SHA
+    - run:
+        name: set github status pending
+        command: |
+          set -euo pipefail
+          curl -fIu $AUTH -XPOST -d@- $URL <(
+            cat \<<EOF
+            {
+              "state": "pending",
+              "target_url": "$CIRCLE_BUILD_URL",
+              "description": "started",
+              "context": "ci/print_env"
+            } 
+            EOF
+          ) 
+    - run: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
+    - run:
+        name: set success
+        when: on_success
+        command: export STATE=success DESC=success
+    - run:
+        name: set failed
+        when: on_fail
+        command: export STATE=failure DESC=failed
+    - run:
+        name: set github status success
+        when: always
+        command: |
+          set -euo pipefail
+          curl -fIu $AUTH -XPOST -d@- $URL <(
+            cat \<<EOF
+            {
+              "state": "$STATE",
+              "target_url": "$CIRCLE_BUILD_URL",
+              "description": "$DESC",
+              "context": "ci/print_env"
+            } 
+            EOF
+          )       
 
 workflows:
   all:
