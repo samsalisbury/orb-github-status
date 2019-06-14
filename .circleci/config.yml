@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   print_env:
     docker:
-    - image: busybox
+    - image: buildpack-deps:19.04-curl
     steps:
     - run:
         name: configure environment
