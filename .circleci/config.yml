@@ -19,15 +19,14 @@ jobs:
         name: set github status pending
         command: |
           set -euo pipefail
-          BODY=$(cat \<<EOF
+          read -r -d '' VAR \<<EOF
             {
               "state": "pending",
               "target_url": "$CIRCLE_BUILD_URL",
               "description": "started",
               "context": "ci/print_env"
             } 
-            EOF
-          )
+          EOF
           curl -fIu $AUTH -XPOST -d@- $URL < $BODY
     - run: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
     - run:
@@ -43,15 +42,14 @@ jobs:
         when: always
         command: |
           set -euo pipefail
-          BODY=$(cat \<<EOF
+          read -r -d '' VAR \<<EOF
             {
               "state": "$STATE",
               "target_url": "$CIRCLE_BUILD_URL",
               "description": "$DESC",
               "context": "ci/print_env"
             } 
-            EOF
-          )       
+          EOF
           curl -fIu $AUTH -XPOST -d@- $URL < $BODY
 
 workflows:
