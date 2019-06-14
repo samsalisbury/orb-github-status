@@ -1,0 +1,13 @@
+version: 2.1
+
+jobs:
+  print_env:
+    docker:
+    - image: busybox
+    steps:
+    - run: env | grep CIRCLE
+
+workflows:
+  all:
+    jobs:
+      - print_env
