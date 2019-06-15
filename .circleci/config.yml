@@ -103,9 +103,6 @@ commands:
             env | grep CIRCLE
             echo "Sleeping for 30s"; sleep 30
             exit <<parameters.exit_code>>
-      - run:
-          name: failing for fun
-          command: |
       - github_status/report
 
 executors:
