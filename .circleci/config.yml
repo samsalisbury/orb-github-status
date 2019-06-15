@@ -2,10 +2,51 @@ version: 2.1
 
 commands:
   post_status:
+    parameters:
+      state:
+        type: string
+      description:
+        type: string
+      context:
+        type: string
     steps:
       - run:
           command: |
-            echo "todo"
+            set -euo pipefail
+            API=https://api.github.com
+            USER=$CIRCLE_PROJECT_USERNAME
+            REPO=$CIRCLE_PROJECT_REPONAME
+            SHA=$CIRCLE_SHA1
+            AUTH=samsalisbury:$GITHUB_ACCESS_TOKEN
+            URL=$API/repos/$USER/$REPO/statuses/$SHA
+            # The read below will exit with 1 as it hits EOF,
+            # so we temporarily disable error checking.
+            set +e
+            read -r -d '' BODY \<<EOF
+              {
+                "state": "<< parameters.state >>",
+                "target_url": "$CIRCLE_BUILD_URL",
+                "description": "<< parameters.description >>",
+                "context": "ci/print_env"
+              } 
+            EOF
+            set -euo pipefail
+            AUTHLEN=$(echo $AUTH | wc -m | xargs)
+            echo "\$ curl -u ?AUTH[$AUTHLEN chars hidden]? -XPOST -d@- $URL"
+            echo "< $BODY"
+            echo $BODY | curl -u $AUTH -XPOST -d@- $URL
+  set_pending:
+    parameters:
+      description:
+        type: string
+      context:
+        type: string
+    steps:
+      - post_status:
+          state: pending
+          description: << parameters.description >>
+          context: << parameters.context >>
+
 
 
 jobs:
@@ -13,37 +54,9 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:19.04-curl
     steps:
-    - run:
-        name: configure environment
-        command: |
-          set -euo pipefail
-          export API=https://api.github.com
-          export USER=$CIRCLE_PROJECT_USERNAME
-          export REPO=$CIRCLE_PROJECT_REPONAME
-          export SHA=$CIRCLE_SHA1
-          cat \<<EOF \>> $BASH_ENV
-          export AUTH=samsalisbury:$GITHUB_ACCESS_TOKEN
-          export URL=$API/repos/$USER/$REPO/statuses/$SHA
-          EOF
-    - run:
-        name: set github status pending
-        command: |
-          # The read below will exit with 1 as it hits EOF,
-          # so we temporarily disable error checking.
-          set +e
-          read -r -d '' BODY \<<EOF
-            {
-              "state": "pending",
-              "target_url": "$CIRCLE_BUILD_URL",
-              "description": "started",
-              "context": "ci/print_env"
-            } 
-          EOF
-          set -euo pipefail
-          AUTHLEN=$(echo $AUTH | wc -m | xargs)
-          echo "\$ curl -u ?AUTH[$AUTHLEN chars hidden]? -XPOST -d@- $URL"
-          echo "< $BODY"
-          echo $BODY | curl -u $AUTH -XPOST -d@- $URL
+    - set_pending:
+        description: sleeping 30s
+        context: ci/print_env
     - run: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
     - run:
         name: set success
