@@ -14,6 +14,7 @@ commands:
         default: on_success
     steps:
       - run:
+          when: <<parameters.when>>
           name: >
             setting github status: <<parameters.context>>:
             <<parameters.state>>: <<parameters.description>>
