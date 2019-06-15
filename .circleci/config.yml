@@ -9,6 +9,9 @@ commands:
         type: string
       context:
         type: string
+      when:
+        type: string
+        default: on_success
     steps:
       - run:
           command: |
@@ -43,9 +46,28 @@ commands:
         type: string
     steps:
       - post_status:
+          when: always
           state: pending
           description: << parameters.description >>
           context: << parameters.context >>
+  set_success_or_fail:
+    parameters:
+      description:
+        type: string
+      context:
+        type: string
+    steps:
+      - post_status:
+          when: on_success
+          state: success
+          description: << parameters.description >>
+          context: << parameters.context >>
+      - post_status:
+          when: on_fail
+          state: failure
+          description: << parameters.description >>
+          context: << parameters.context >>
+
 
 
 
@@ -58,28 +80,9 @@ jobs:
         description: sleeping 30s
         context: ci/print_env
     - run: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
-    - run:
-        name: set success
-        when: on_success
-        command: export STATE=success DESC=success
-    - run:
-        name: set failed
-        when: on_fail
-        command: export STATE=failure DESC=failed
-    - run:
-        name: set github status success
-        when: always
-        command: |
-          set -euo pipefail
-          read -r -d '' BODY \<<EOF
-            {
-              "state": "$STATE",
-              "target_url": "$CIRCLE_BUILD_URL",
-              "description": "$DESC",
-              "context": "ci/print_env"
-            } 
-          EOF
-          curl -fIu $AUTH -XPOST -d@- $URL < $BODY
+    - set_success_or_fail:
+        description: sleeping 30s
+        context: ci/print_env
 
 workflows:
   all:
