@@ -28,7 +28,9 @@ jobs:
     - run:
         name: set github status pending
         command: |
-          set -euxo pipefail
+          # The read below will exit with 1 as it hits EOF,
+          # so we temporarily disable error checking and pipefail.
+          set +eo pipefail
           read -r -d '' BODY \<<EOF
             {
               "state": "pending",
@@ -37,6 +39,7 @@ jobs:
               "context": "ci/print_env"
             } 
           EOF
+          set -euxo pipefail
           AUTHLEN=$(echo $AUTH | wc -m | xargs)
           echo "\$ curl -fIu ?AUTH[$AUTHLEN chars hidden]? -XPOST -d@- $URL"
           echo "< $BODY"
