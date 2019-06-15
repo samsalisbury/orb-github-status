@@ -88,25 +88,47 @@ orbs:
               description: <<parameters.description>>
               context: <<parameters.context>>
 
-jobs:
+commands:
   print_env:
+    parameters:
+      exit_code:
+        type: integer
+    steps:
+      - github_status/pending:
+          description: sleeping 30s
+      - run:
+          name: printing env and sleeping 30s
+          command: |
+            set -euo pipefail
+            env | grep CIRCLE
+            echo "Sleeping for 30s"; sleep 30
+            exit <<parameters.exit_code>>
+      - run:
+          name: failing for fun
+          command: |
+      - github_status/report
+
+executors:
+  buildpack_deps:
     docker:
       - image: circleci/buildpack-deps:19.04-curl
+
+jobs:
+  print_env_success:
+    executor: buildpack_deps
     steps:
-    - github_status/pending:
-        description: sleeping 30s
-    - run:
-        name: printing env and sleeping 30s
-        command: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
-    - run:
-        name: failing for fun
-        command: exit 1
-    - run:
-        name: succeeds (but won't be run)
-        command: exit 0
-    - github_status/report
+      - print_env:
+          exit_code: 0
+  print_env_fail:
+    executor: buildpack_deps
+    steps:
+      - print_env:
+          exit_code: 1
 
 workflows:
-  all:
+  failing:
     jobs:
-      - print_env
+      - print_env_success
+  succeeding:
+    jobs:
+      - print_env_fail
