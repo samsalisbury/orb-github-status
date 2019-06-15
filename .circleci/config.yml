@@ -22,8 +22,10 @@ orbs:
               name: "Set GitHub Status: <<parameters.state>>"
               command: |
                 set -euo pipefail
+                set +u # Allow context and description to contain unbound variables.
                 CONTEXT="<<parameters.context>>"
                 DESCRIPTION="<<parameters.description>>"
+                set -u
                 if [ -z "$CONTEXT" ]; then CONTEXT="circleci/$CIRCLE_JOB"; fi
                 if [ -z "$DESCRIPTION" ]; then DESCRIPTION="no description provided"; fi
                 # Export the latest values for CONTEXT and DESCRIPTION so later calls
