@@ -45,16 +45,13 @@ orbs:
                   {
                     "state": "<<parameters.state>>",
                     "target_url": "$CIRCLE_BUILD_URL",
-                    "description": "$DESCRIPTION",
+                    "description": "<<parameters.state>>: $DESCRIPTION",
                     "context": "$CONTEXT"
                   } 
                 EOF
                 set -euo pipefail
                 AUTHLEN=$(echo $AUTH | wc -m | xargs)
-                # Debug output.
-                echo "\$ curl -u ?AUTH[$AUTHLEN chars hidden]? -XPOST -d@- $URL"
-                echo "< $BODY"
-                # Post the status.
+                # Post the status (use echo-pipe not \<<< for greater shell compat).
                 echo $BODY | curl -u $AUTH -XPOST -d@- $URL
       pending:
         parameters:
@@ -97,7 +94,6 @@ jobs:
     steps:
     - github_status/pending:
         description: sleeping 30s
-        context: ci/print_env
     - run:
         name: printing env and sleeping 30s
         command: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
