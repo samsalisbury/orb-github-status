@@ -1,5 +1,13 @@
 version: 2.1
 
+commands:
+  post_status:
+    steps:
+      - run:
+          command: |
+            echo "todo"
+
+
 jobs:
   print_env:
     docker:
@@ -29,7 +37,10 @@ jobs:
               "context": "ci/print_env"
             } 
           EOF
-          curl -fIu $AUTH -XPOST -d@- $URL < $BODY
+          AUTHLEN=$(echo $AUTH | wc -m | xargs)
+          echo "\$ curl -fIu ?AUTH[$AUTHLEN chars hidden]? -XPOST -d@- $URL"
+          echo "< $BODY"
+          echo $BODY | curl -fIu $AUTH -XPOST -d@- $URL
     - run: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
     - run:
         name: set success
