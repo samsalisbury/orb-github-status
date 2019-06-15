@@ -19,7 +19,7 @@ orbs:
         steps:
           - run:
               when: <<parameters.when>>
-              name: "Set GitHub Status: <<parameters.state>>"
+              name: "GitHub Status: <<parameters.state>>"
               command: |
                 set -euo pipefail
                 set +u # Allow context and description to contain unbound variables.
