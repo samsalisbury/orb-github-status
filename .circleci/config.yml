@@ -14,6 +14,9 @@ commands:
         default: on_success
     steps:
       - run:
+          name: >
+            setting github status: <<parameters.context>>:
+            <<parameters.state>>: <<parameters.description>>
           command: |
             set -euo pipefail
             API=https://api.github.com
@@ -68,9 +71,6 @@ commands:
           description: << parameters.description >>
           context: << parameters.context >>
 
-
-
-
 jobs:
   print_env:
     docker:
@@ -79,7 +79,9 @@ jobs:
     - set_pending:
         description: sleeping 30s
         context: ci/print_env
-    - run: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
+    - run:
+        name: printing env and sleeping 30s
+        command: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
     - set_success_or_fail:
         description: sleeping 30s
         context: ci/print_env
