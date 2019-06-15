@@ -22,10 +22,14 @@ orbs:
               name: "Set GitHub Status: <<parameters.state>>"
               command: |
                 set -euo pipefail
+                CONTEXT="<<parameters.context>>"
+                DESCRIPTION="<<parameters.description>>"
+                if [ -z "$CONTEXT" ]; then CONTEXT="circleci/$CIRCLE_JOB"; fi
+                if [ -z "$DESCRIPTION" ]; then DESCRIPTION="no description provided"; fi
                 # Export the latest values for CONTEXT and DESCRIPTION so later calls
                 # do not need to set them explicitly again.
-                echo "export GITHUB_STATUS_CONTEXT='<<parameters.context>>'" >> $BASH_ENV
-                echo "export GITHUB_STATUS_DESCRIPTION='<<parameters.description>>'" >> $BASH_ENV
+                echo "export GITHUB_STATUS_CONTEXT='$CONTEXT'" >> $BASH_ENV
+                echo "export GITHUB_STATUS_DESCRIPTION='$DESCRIPTION'" >> $BASH_ENV
                 # Compose our URL and auth pieces.
                 API=https://api.github.com
                 USER=$CIRCLE_PROJECT_USERNAME
@@ -41,8 +45,8 @@ orbs:
                   {
                     "state": "<<parameters.state>>",
                     "target_url": "$CIRCLE_BUILD_URL",
-                    "description": "<<parameters.description>>",
-                    "context": "ci/print_env"
+                    "description": "$DESCRIPTION",
+                    "context": "$CONTEXT"
                   } 
                 EOF
                 set -euo pipefail
@@ -100,6 +104,9 @@ jobs:
     - run:
         name: failing for fun
         command: exit 1
+    - run:
+        name: succeeds (but won't be run)
+        command: exit 0
     - github_status/report
 
 workflows:
