@@ -26,8 +26,8 @@ orbs:
                 CONTEXT="<<parameters.context>>"
                 DESCRIPTION="<<parameters.description>>"
                 set -u
-                if [ -z "$CONTEXT" ]; then CONTEXT="circleci/$CIRCLE_JOB"; fi
-                if [ -z "$DESCRIPTION" ]; then DESCRIPTION="no description provided"; fi
+                [ -n "$CONTEXT" ] || CONTEXT="circleci/$CIRCLE_JOB"
+                [ -n "$DESCRIPTION" ] || DESCRIPTION="$CONTEXT"
                 # Export the latest values for CONTEXT and DESCRIPTION so later calls
                 # do not need to set them explicitly again.
                 echo "export GITHUB_STATUS_CONTEXT='$CONTEXT'" >> $BASH_ENV
@@ -37,7 +37,7 @@ orbs:
                 USER=$CIRCLE_PROJECT_USERNAME
                 REPO=$CIRCLE_PROJECT_REPONAME
                 SHA=$CIRCLE_SHA1
-                AUTH=$GITHUB_ACCESS_USER:$GITHUB_ACCESS_TOKEN
+                AUTH=$GITHUB_STATUS_USER:$GITHUB_STATUS_TOKEN
                 URL=$API/repos/$USER/$REPO/statuses/$SHA
                 # Compose the body.
                 # The read below will exit with 1 as it hits EOF,
@@ -52,7 +52,6 @@ orbs:
                   } 
                 EOF
                 set -euo pipefail
-                AUTHLEN=$(echo $AUTH | wc -m | xargs)
                 # Post the status (use echo-pipe not \<<< for greater shell compat).
                 echo $BODY | curl -u $AUTH -XPOST -d@- $URL
       pending:
