@@ -82,6 +82,9 @@ jobs:
     - run:
         name: printing env and sleeping 30s
         command: env | grep CIRCLE; echo "Sleeping for 30s"; sleep 30
+    - run:
+        name: failing for fun
+        command: exit 1
     - set_success_or_fail:
         description: sleeping 30s
         context: ci/print_env
