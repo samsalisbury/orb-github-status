@@ -5,81 +5,93 @@ orbs:
     commands:
       post_status:
         parameters:
+          when:
+            type: string
+            default: on_success
           state:
             type: string
           description:
             type: string
+            default: $GITHUB_STATUS_DESCRIPTION
           context:
             type: string
-          when:
-            type: string
-            default: on_success
+            default: $GITHUB_STATUS_CONTEXT
         steps:
           - run:
               when: <<parameters.when>>
-              name: >
-                Set GitHub Status: <<parameters.state>>:
-                <<parameters.context>>: <<parameters.description>>
+              name: "Set GitHub Status: <<parameters.state>>"
               command: |
                 set -euo pipefail
+                # Export the latest values for CONTEXT and DESCRIPTION so later calls
+                # do not need to set them explicitly again.
+                echo "export GITHUB_STATUS_CONTEXT='<<parameters.context>>'" >> $BASH_ENV
+                echo "export GITHUB_STATUS_DESCRIPTION='<<parameters.description>>'" >> $BASH_ENV
+                # Compose our URL and auth pieces.
                 API=https://api.github.com
                 USER=$CIRCLE_PROJECT_USERNAME
                 REPO=$CIRCLE_PROJECT_REPONAME
                 SHA=$CIRCLE_SHA1
                 AUTH=samsalisbury:$GITHUB_ACCESS_TOKEN
                 URL=$API/repos/$USER/$REPO/statuses/$SHA
+                # Compose the body.
                 # The read below will exit with 1 as it hits EOF,
                 # so we temporarily disable error checking.
                 set +e
                 read -r -d '' BODY \<<EOF
                   {
-                    "state": "<< parameters.state >>",
+                    "state": "<<parameters.state>>",
                     "target_url": "$CIRCLE_BUILD_URL",
-                    "description": "<< parameters.description >>",
+                    "description": "<<parameters.description>>",
                     "context": "ci/print_env"
                   } 
                 EOF
                 set -euo pipefail
                 AUTHLEN=$(echo $AUTH | wc -m | xargs)
+                # Debug output.
                 echo "\$ curl -u ?AUTH[$AUTHLEN chars hidden]? -XPOST -d@- $URL"
                 echo "< $BODY"
+                # Post the status.
                 echo $BODY | curl -u $AUTH -XPOST -d@- $URL
-      set_pending:
+      pending:
         parameters:
           description:
             type: string
+            default: $GITHUB_STATUS_DESCRIPTION
           context:
             type: string
+            default: $GITHUB_STATUS_CONTEXT
         steps:
           - post_status:
               when: always
               state: pending
-              description: << parameters.description >>
-              context: << parameters.context >>
-      set_success_or_fail:
+              description: <<parameters.description>>
+              context: <<parameters.context>>
+      report:
         parameters:
           description:
             type: string
+            default: $GITHUB_STATUS_DESCRIPTION
           context:
             type: string
+            default: $GITHUB_STATUS_CONTEXT
         steps:
           - post_status:
               when: on_success
               state: success
-              description: << parameters.description >>
-              context: << parameters.context >>
+              description: <<parameters.description>>
+              context: <<parameters.context>>
           - post_status:
               when: on_fail
               state: failure
-              description: << parameters.description >>
-              context: << parameters.context >>
+              description: <<parameters.description>>
+              context: <<parameters.context>>
 
 jobs:
   print_env:
     docker:
       - image: circleci/buildpack-deps:19.04-curl
     steps:
-    - github_status/set_pending:
+    - github_status/pending:
         description: sleeping 30s
         context: ci/print_env
     - run:
@@ -88,9 +100,7 @@ jobs:
     - run:
         name: failing for fun
         command: exit 1
-    - github_status/set_success_or_fail:
-        description: sleeping 30s
-        context: ci/print_env
+    - github_status/report
 
 workflows:
   all:
