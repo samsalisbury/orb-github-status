@@ -37,7 +37,7 @@ orbs:
                 USER=$CIRCLE_PROJECT_USERNAME
                 REPO=$CIRCLE_PROJECT_REPONAME
                 SHA=$CIRCLE_SHA1
-                AUTH=samsalisbury:$GITHUB_ACCESS_TOKEN
+                AUTH=$GITHUB_ACCESS_USER:$GITHUB_ACCESS_TOKEN
                 URL=$API/repos/$USER/$REPO/statuses/$SHA
                 # Compose the body.
                 # The read below will exit with 1 as it hits EOF,
