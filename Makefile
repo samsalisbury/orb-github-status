@@ -1,6 +1,6 @@
 SHELL := /usr/bin/env bash -euo pipefail
 
-.PHONY: validate test
+.PHONY: validate test publish publish-dev
 
 CCI_VERSION := $(shell circleci version)
 ifeq ($(CCI_VERSION),)
@@ -11,7 +11,7 @@ CCI := .make/cci-version-$(CCI_VERSION)
 
 ORB_FILE := orbs/github-status.yml
 ORB_NAME := samsalisbury/github-status
-ORB_VERSION := $(shell git describe --dirty)
+ORB_VERSION := $(shell git describe)
 ORB_VERSION_DIRTY := $(shell git describe --dirty)
 CLEAN := NO
 # If these are equal, we are not dirty.
@@ -36,9 +36,9 @@ validate: $(SOURCE)
 test: validate
 
 publish:
-	[ -n "$(ORB_EXACT_VERSION)" ] || { echo "Not on exact git tag, cannot publish."; exit 1; }
+	@[ -n "$(ORB_EXACT_VERSION)" ] || { echo "Not on exact git tag, cannot publish."; exit 1; }
 	circleci orb publish $(ORB_FILE) $(ORB_NAME):$(ORB_EXACT_VERSION)
 
 publish-dev:
-	[ $(CLEAN) = YES ] || { echo "Repo dirty, cannot publish dev version."; exit 1; }
+	@[ $(CLEAN) = YES ] || { echo "Repo dirty, cannot publish dev version."; exit 1; }
 	circleci orb publish $(ORB_FILE) $(ORB_NAME):dev:$(ORB_VERSION)
