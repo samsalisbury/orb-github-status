@@ -37,8 +37,8 @@ test: validate
 
 publish:
 	@[ -n "$(ORB_EXACT_VERSION)" ] || { echo "Not on exact git tag, cannot publish."; exit 1; }
-	circleci orb publish $(ORB_FILE) $(ORB_NAME):$(ORB_EXACT_VERSION)
+	circleci orb publish $(ORB_FILE) $(ORB_NAME)@$(ORB_EXACT_VERSION)
 
 publish-dev:
 	@[ $(CLEAN) = YES ] || { echo "Repo dirty, cannot publish dev version."; exit 1; }
-	circleci orb publish $(ORB_FILE) $(ORB_NAME):dev:$(ORB_VERSION)
+	circleci orb publish $(ORB_FILE) $(ORB_NAME)@dev:$(ORB_VERSION)
