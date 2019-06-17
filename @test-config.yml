@@ -1,0 +1,53 @@
+version: 2.1
+
+# This example references the orb as an inline template
+# from the orbs directory, and is used for testing.
+#
+# It defines 2 workflows, one which passes and one which fails
+# so we can see both result types in github.
+
+workflows:
+  failing:
+    jobs:
+      - print_env_success
+  succeeding:
+    jobs:
+      - print_env_fail
+
+jobs:
+  print_env_success:
+    executor: buildpack_deps
+    steps:
+      - print_env:
+          exit_code: 0
+  print_env_fail:
+    executor: buildpack_deps
+    steps:
+      - print_env:
+          exit_code: 1
+
+commands:
+  print_env:
+    parameters:
+      exit_code:
+        type: integer
+    steps:
+      # First call github-status/pending to notify github to expect a result.
+      - github-status/pending:
+          description: sleeping 30s
+      - run:
+          name: printing env and sleeping 30s
+          command: |
+            set -euo pipefail
+            env | grep CIRCLE
+            echo "Sleeping for 30s"; sleep 30
+            exit <<parameters.exit_code>>
+      # After all necessary steps (i.e. those whose failure we would want to
+      # report) call github-status/report to report success or failure.
+      - github-status/report
+
+executors:
+  buildpack_deps:
+    docker:
+      - image: circleci/buildpack-deps:19.04-curl
+
