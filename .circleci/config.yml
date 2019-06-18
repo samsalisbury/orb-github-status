@@ -9,7 +9,7 @@ commands:
       exit_code:
         type: integer
     steps:
-      - github_status/pending:
+      - github-status/pending:
           description: sleeping 30s
       - run:
           name: printing env and sleeping 30s
@@ -24,7 +24,7 @@ commands:
             echo ==================
             sleep 30
             exit <<parameters.exit_code>>
-      - github_status/report
+      - github-status/report
 
 executors:
   buildpack_deps:
