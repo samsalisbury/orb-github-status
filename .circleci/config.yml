@@ -62,12 +62,15 @@ workflows:
   # TODO: Add tests that GH receives the success/fail status updates
   #       and relegate these test- workflows to example code.
   test-failing:
-    filters:
-      branches:
-        only: /^test-fail.*/
     jobs:
-      - print_env_fail
-      - print_env_fail_machine
+      - print_env_fail:
+          filters:
+            branches:
+              only: /^test-fail.*/
+      - print_env_fail_machine:
+          filters:
+            branches:
+              only: /^test-fail.*/
   test-succeeding:
     jobs:
       - print_env_success
