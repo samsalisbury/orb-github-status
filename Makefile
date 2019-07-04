@@ -1,4 +1,6 @@
-SHELL := /usr/bin/env bash -euo pipefail
+# Set SHELL to 'strict mode' without using .SHELLFLAGS for max compatibility.
+# See https://fieldnotes.tech/how-to-shell-for-compatible-makefiles/
+SHELL := /usr/bin/env bash -euo pipefail -c
 
 .PHONY: validate test publish publish-dev
 
