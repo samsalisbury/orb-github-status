@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/samsalisbury/orb-github-status.svg?style=svg)](https://circleci.com/gh/samsalisbury/orb-github-status)
+
 # CircleCI Orb: Custom GitHub Status Checks
 
 A CircleCI orb to send simple GitHub status check results.
