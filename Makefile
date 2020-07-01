@@ -39,7 +39,7 @@ test: validate
 	# No other tests yet.
 
 publish:
-	@[ -n "$(ORB_EXACT_VERSION)" ] || { echo "Not on exact git tag, cannot publish."; exit 1; }
+	@[ -n "$(ORB_EXACT_VERSION)" ] || { echo "Not on exact annotated git tag, cannot publish."; exit 1; }
 	circleci orb publish $(ORB_FILE) $(ORB_NAME)@$(ORB_EXACT_VERSION)
 
 publish-dev:
