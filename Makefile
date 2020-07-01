@@ -36,6 +36,7 @@ validate: $(SOURCE)
 	circleci config pack . | circleci config process - | circleci config validate - > /dev/null
 
 test: validate
+	# No other tests yet.
 
 publish:
 	@[ -n "$(ORB_EXACT_VERSION)" ] || { echo "Not on exact git tag, cannot publish."; exit 1; }
