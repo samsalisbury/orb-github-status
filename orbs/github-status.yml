@@ -19,7 +19,6 @@ commands:
           when: <<parameters.when>>
           name: "GitHub Status: <<parameters.state>>"
           command: |
-            set -euo pipefail
             CONTEXT="<<parameters.context>>"
             DESCRIPTION="<<parameters.description>>"
             [ -n "$CONTEXT" ] || CONTEXT="circleci/$CIRCLE_JOB"
@@ -39,7 +38,7 @@ commands:
             BODY='
               {
                 "state": "<<parameters.state>>",
-                "target_url": "$CIRCLE_BUILD_URL",
+                "target_url": "'"$CIRCLE_BUILD_URL"'",
                 "description": "<<parameters.state>>: '"$DESCRIPTION"'",
                 "context": "'"$CONTEXT"'"
               }
